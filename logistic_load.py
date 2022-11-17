@@ -48,7 +48,6 @@ def fill_truck(row, monthly_package_loads, truck_ratio, truck_capacity, distance
     truck_needed['sum'] = truck_needed['in'] * distance['in'] + truck_needed['out'] * distance['out']
     efficiency = pd.read_excel('logistic.xlsx', sheet_name='efficiency')
     efficiency.set_index('energy', inplace=True)
-    print(efficiency)
     result = efficiency.copy()
     for i in efficiency.columns:
         result[i] = truck_needed.loc[i, 'sum'] / efficiency[i]
@@ -84,7 +83,7 @@ def calculate_logistic_loads(item):
     usage = item['1ST_USE']
     forklift = item['forklift']
     truck = item['truck']
-    data_location = f"{path}/outputs/data/demand/{name}"
+    data_location = f"{path}/outputs/data/demand/{name}.csv"
     data = pd.read_csv(data_location)
     data['forklift'] = data.apply(fill_logistic, axis=1, args=(usage, area, path, forklift))
     data['truck_diesel'] = data.apply(fill_logistic, axis=1, args=(usage, area, path, truck['diesel']))
@@ -131,7 +130,7 @@ def get_logistic_loads(db_path):
 def process_logistic_loads(db_path, multi_processing=True):
     building_info = get_logistic_loads(db_path)
     building_info['path'] = db_path
-    data = list(building_info.transpose().to_dict())
+    data = list(building_info.transpose().to_dict().values())
     if multi_processing:
         multi = cpu_count() - 1
         Pool(multi).map(calculate_logistic_loads, data)
