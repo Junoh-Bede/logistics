@@ -119,7 +119,7 @@ def get_logistic_loads(db_path):
     return building_info
 
 
-def process_agriculture_loads(db_path, energy_type, multi_processing=True):
+def process_agriculture_loads(db_path, multi_processing=True):
     building_info = get_logistic_loads(db_path)
     building_info['path'] = db_path
     data = list(building_info.transpose().to_dict())
