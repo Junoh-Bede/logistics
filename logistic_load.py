@@ -4,6 +4,7 @@ from datetime import datetime
 from multiprocessing import Pool, cpu_count
 
 
+# 물류 관련시설 운영시간 계산
 def logistic_hours(db_path, usage):
     occupancy_file = f"{db_path}/inputs/technology/archetypes/use_types/{usage}.csv"
     occupancy = pd.read_csv(occupancy_file, header=2)
@@ -15,6 +16,7 @@ def logistic_hours(db_path, usage):
     return total_hours, result
 
 
+# 운영시간에 따른 기기 가동 에너지 분배
 def fill_logistic(row, usage, area, path, energy_per_sqm):
     if usage in ['COOL', 'COLD', 'GENERAL']:
         total_hours, result = logistic_hours(path, usage)
@@ -37,6 +39,7 @@ def fill_logistic(row, usage, area, path, energy_per_sqm):
         return 0
 
 
+# 물류창고 평균 운송거리 * 평균 이용 트럭 용량을 토대로 필요 에너지량 계산
 def fill_truck(row, monthly_package_loads, truck_ratio, truck_capacity, distance):
     annual_load = monthly_package_loads[row['1ST_USE']] * 12
     annual_truck_needed = annual_load / truck_capacity
@@ -53,6 +56,7 @@ def fill_truck(row, monthly_package_loads, truck_ratio, truck_capacity, distance
     return result['sum'].to_dict()
 
 
+# 물류창고 평균 운송거리 계산
 def get_average_distance():
     data = pd.read_excel('logistic.xlsx', sheet_name='destination')
     data['sum'] = data.sum(axis=1, numeric_only=True)
@@ -61,6 +65,7 @@ def get_average_distance():
     return data['average_km'].to_dict()
 
 
+# 물류창고 평균 운송 트럭 용량 계산
 def get_average_weight():
     data = pd.read_excel('logistic.xlsx', sheet_name='monthly_cargos')
     data.set_index('destination', inplace=True)
@@ -71,6 +76,7 @@ def get_average_weight():
     return data, weighted_average
 
 
+# CEA 결과 파일 읽고 각각의 건물에 맞는 에너지값 계산 후 저장
 def calculate_logistic_loads(item):
     path = item['path']
     name = item['Name']
@@ -86,6 +92,7 @@ def calculate_logistic_loads(item):
     data.to_csv(data_location)
 
 
+# CEA 입력값 확인 및 parsing
 def get_building_info(db_path):
     architecture = gpd.read_file(f'{db_path}/inputs/building-properties/architecture.dbf')
     architecture.drop(columns=['geometry'], inplace=True)
@@ -99,6 +106,7 @@ def get_building_info(db_path):
     return building
 
 
+# CEA 입력값 및 지게차, 트럭 specification에 따른 연간 예상 에너지 계산
 # TODO energy 값 바꾸기
 def get_logistic_loads(db_path):
     building_info = get_building_info(db_path)
@@ -119,7 +127,8 @@ def get_logistic_loads(db_path):
     return building_info
 
 
-def process_agriculture_loads(db_path, multi_processing=True):
+# multiprocessing 여부에 따른 작업
+def process_logistic_loads(db_path, multi_processing=True):
     building_info = get_logistic_loads(db_path)
     building_info['path'] = db_path
     data = list(building_info.transpose().to_dict())
@@ -135,9 +144,9 @@ def main():
     db_path = input("Please input CEA scenario path: ")
     multi = input("Are you going to run multiprocessing? (y/n) : ")
     if multi == 'y':
-        process_agriculture_loads(db_path)
+        process_logistic_loads(db_path)
     elif multi == 'n':
-        process_agriculture_loads(db_path, multi_processing=False)
+        process_logistic_loads(db_path, multi_processing=False)
 
 
 if __name__ == '__main__':
