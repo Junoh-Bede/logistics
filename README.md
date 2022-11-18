@@ -1,7 +1,8 @@
 # logistics
 
 ## Forkup 에너지 수요 예측
-![image](https://user-images.githubusercontent.com/71992666/202593294-57608be8-565e-49e0-829a-ae3ce3ca618c.png)
+![image](https://user-images.githubusercontent.com/71992666/202593377-61d495cf-e06d-4bf4-95aa-889c466c18e8.png)
+
 
 
 ## 화물차 에너지 수요 예측
